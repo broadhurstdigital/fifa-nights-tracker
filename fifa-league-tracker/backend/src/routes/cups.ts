@@ -19,10 +19,10 @@ router.get('/', async (req, res) => {
     query += ' ORDER BY country, name';
     
     const result = await db.query(query, params);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching cups:', error);
-    res.status(500).json({ error: 'Failed to fetch cups' });
+    return res.status(500).json({ error: 'Failed to fetch cups' });
   }
 });
 
@@ -36,10 +36,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Cup not found' });
     }
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching cup:', error);
-    res.status(500).json({ error: 'Failed to fetch cup' });
+    return res.status(500).json({ error: 'Failed to fetch cup' });
   }
 });
 
@@ -62,10 +62,10 @@ router.get('/:id/season/:seasonId/fixtures', async (req, res) => {
       ORDER BY cf.round_name, cf.id
     `, [id, seasonId]);
     
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching cup fixtures:', error);
-    res.status(500).json({ error: 'Failed to fetch cup fixtures' });
+    return res.status(500).json({ error: 'Failed to fetch cup fixtures' });
   }
 });
 
@@ -109,10 +109,10 @@ router.get('/:id/season/:seasonId/matches', async (req, res) => {
     query += ' ORDER BY cf.round_name, cm.id';
     
     const result = await db.query(query, params);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching cup matches:', error);
-    res.status(500).json({ error: 'Failed to fetch cup matches' });
+    return res.status(500).json({ error: 'Failed to fetch cup matches' });
   }
 });
 
@@ -167,10 +167,10 @@ router.post('/:id/season/:seasonId/fixtures', async (req, res) => {
       WHERE cf.id = $1
     `, [result.rows[0].id]);
     
-    res.status(201).json(joinedResult.rows[0]);
+    return res.status(201).json(joinedResult.rows[0]);
   } catch (error) {
     console.error('Error creating cup fixture:', error);
-    res.status(500).json({ error: 'Failed to create cup fixture' });
+    return res.status(500).json({ error: 'Failed to create cup fixture' });
   }
 });
 
@@ -240,10 +240,10 @@ router.post('/fixtures/:fixtureId/matches', async (req, res) => {
       WHERE cm.id = $1
     `, [result.rows[0].id]);
     
-    res.status(201).json(joinedResult.rows[0]);
+    return res.status(201).json(joinedResult.rows[0]);
   } catch (error) {
     console.error('Error creating cup match:', error);
-    res.status(500).json({ error: 'Failed to create cup match' });
+    return res.status(500).json({ error: 'Failed to create cup match' });
   }
 });
 
@@ -313,10 +313,10 @@ router.patch('/matches/:id/score', async (req, res) => {
       WHERE cm.id = $1
     `, [id]);
     
-    res.json(joinedResult.rows[0]);
+    return res.json(joinedResult.rows[0]);
   } catch (error) {
     console.error('Error updating cup match score:', error);
-    res.status(500).json({ error: 'Failed to update cup match score' });
+    return res.status(500).json({ error: 'Failed to update cup match score' });
   }
 });
 
@@ -402,7 +402,7 @@ router.post('/:id/season/:seasonId/generate-fixtures', async (req, res) => {
       client.release();
     }
     
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Cup fixtures generated successfully',
       cup_name: cup.name,
       fixtures_created: fixtures.length,
@@ -412,7 +412,7 @@ router.post('/:id/season/:seasonId/generate-fixtures', async (req, res) => {
     
   } catch (error) {
     console.error('Error generating cup fixtures:', error);
-    res.status(500).json({ error: 'Failed to generate cup fixtures' });
+    return res.status(500).json({ error: 'Failed to generate cup fixtures' });
   }
 });
 

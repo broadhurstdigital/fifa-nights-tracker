@@ -50,10 +50,10 @@ router.get('/season/:seasonId', async (req, res) => {
     query += ' ORDER BY f.round_number, f.match_number';
     
     const result = await db.query(query, params);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching fixtures:', error);
-    res.status(500).json({ error: 'Failed to fetch fixtures' });
+    return res.status(500).json({ error: 'Failed to fetch fixtures' });
   }
 });
 
@@ -79,10 +79,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Fixture not found' });
     }
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching fixture:', error);
-    res.status(500).json({ error: 'Failed to fetch fixture' });
+    return res.status(500).json({ error: 'Failed to fetch fixture' });
   }
 });
 
@@ -126,6 +126,11 @@ router.post('/season/:seasonId/import-csv', upload.single('csv'), async (req, re
     // Validate CSV structure
     const requiredColumns = ['Match Number', 'Round Number', 'Date', 'Location', 'Home Team', 'Away Team'];
     const firstRow = csvData[0];
+
+    if (!firstRow) {
+      return res.status(400).json({ error: 'CSV file appears to be empty or invalid' });
+    }
+
     const missingColumns = requiredColumns.filter(col => !(col in firstRow));
     
     if (missingColumns.length > 0) {
@@ -271,7 +276,7 @@ router.post('/season/:seasonId/import-csv', upload.single('csv'), async (req, re
     
     const stats = statsResult.rows[0];
     
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Fixtures imported successfully',
       stats: {
         total_fixtures: parseInt(stats.total_fixtures),
@@ -285,7 +290,7 @@ router.post('/season/:seasonId/import-csv', upload.single('csv'), async (req, re
     
   } catch (error) {
     console.error('Error importing fixtures:', error);
-    res.status(500).json({ error: 'Failed to import fixtures from CSV' });
+    return res.status(500).json({ error: 'Failed to import fixtures from CSV' });
   }
 });
 
@@ -306,10 +311,10 @@ router.get('/season/:seasonId/rounds', async (req, res) => {
       ORDER BY round_number
     `, [seasonId]);
     
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching rounds:', error);
-    res.status(500).json({ error: 'Failed to fetch rounds' });
+    return res.status(500).json({ error: 'Failed to fetch rounds' });
   }
 });
 
@@ -330,13 +335,13 @@ router.delete('/season/:seasonId', async (req, res) => {
     
     const result = await db.query('DELETE FROM fixtures WHERE season_id = $1', [seasonId]);
     
-    res.json({ 
+    return res.json({ 
       message: 'All fixtures deleted successfully',
       deleted_count: result.rowCount 
     });
   } catch (error) {
     console.error('Error deleting fixtures:', error);
-    res.status(500).json({ error: 'Failed to delete fixtures' });
+    return res.status(500).json({ error: 'Failed to delete fixtures' });
   }
 });
 

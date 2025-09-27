@@ -52,14 +52,14 @@ router.post('/match/:matchId/start-shootout', async (req, res) => {
       match.away_team_id
     );
     
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Penalty shootout completed',
       ...result
     });
     
   } catch (error) {
     console.error('Error starting penalty shootout:', error);
-    res.status(500).json({ error: 'Failed to start penalty shootout' });
+    return res.status(500).json({ error: 'Failed to start penalty shootout' });
   }
 });
 
@@ -116,14 +116,14 @@ router.post('/cup-match/:cupMatchId/start-shootout', async (req, res) => {
       cupMatchId
     ]);
     
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Penalty shootout completed',
       ...result
     });
     
   } catch (error) {
     console.error('Error starting cup penalty shootout:', error);
-    res.status(500).json({ error: 'Failed to start penalty shootout' });
+    return res.status(500).json({ error: 'Failed to start penalty shootout' });
   }
 });
 
@@ -133,14 +133,14 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
     
     const shootout = await getPenaltyShootout(parseInt(id));
-    res.json(shootout);
+    return res.json(shootout);
     
   } catch (error) {
     console.error('Error fetching penalty shootout:', error);
     if (error instanceof Error && error.message === 'Penalty shootout not found') {
-      res.status(404).json({ error: 'Penalty shootout not found' });
+      return res.status(404).json({ error: 'Penalty shootout not found' });
     } else {
-      res.status(500).json({ error: 'Failed to fetch penalty shootout' });
+      return res.status(500).json({ error: 'Failed to fetch penalty shootout' });
     }
   }
 });
@@ -160,11 +160,11 @@ router.get('/match/:matchId', async (req, res) => {
     }
     
     const shootout = await getPenaltyShootout(shootoutResult.rows[0].id);
-    res.json(shootout);
+    return res.json(shootout);
     
   } catch (error) {
     console.error('Error fetching match penalty shootout:', error);
-    res.status(500).json({ error: 'Failed to fetch penalty shootout' });
+    return res.status(500).json({ error: 'Failed to fetch penalty shootout' });
   }
 });
 
@@ -183,11 +183,11 @@ router.get('/cup-match/:cupMatchId', async (req, res) => {
     }
     
     const shootout = await getPenaltyShootout(shootoutResult.rows[0].id);
-    res.json(shootout);
+    return res.json(shootout);
     
   } catch (error) {
     console.error('Error fetching cup match penalty shootout:', error);
-    res.status(500).json({ error: 'Failed to fetch penalty shootout' });
+    return res.status(500).json({ error: 'Failed to fetch penalty shootout' });
   }
 });
 
@@ -217,7 +217,7 @@ router.post('/manual', async (req, res) => {
     
     const shootoutId = shootoutResult.rows[0].id;
     
-    res.status(201).json({
+    return res.status(201).json({
       shootout_id: shootoutId,
       message: 'Manual penalty shootout created. Use the attempt endpoint to add penalties.',
       next_attempt: 1,
@@ -226,7 +226,7 @@ router.post('/manual', async (req, res) => {
     
   } catch (error) {
     console.error('Error creating manual penalty shootout:', error);
-    res.status(500).json({ error: 'Failed to create manual penalty shootout' });
+    return res.status(500).json({ error: 'Failed to create manual penalty shootout' });
   }
 });
 
@@ -288,7 +288,7 @@ router.post('/:id/attempt', async (req, res) => {
       }
     });
     
-    res.json({
+    return res.json({
       attempt,
       current_scores: {
         team1_score: team1Score,
@@ -301,14 +301,14 @@ router.post('/:id/attempt', async (req, res) => {
     
   } catch (error) {
     console.error('Error making penalty attempt:', error);
-    res.status(500).json({ error: 'Failed to make penalty attempt' });
+    return res.status(500).json({ error: 'Failed to make penalty attempt' });
   }
 });
 
 // Flip coin endpoint (for testing or manual coin flips)
 router.post('/flip-coin', (req, res) => {
   const result = flipCoin();
-  res.json({ 
+  return res.json({
     result,
     timestamp: new Date().toISOString()
   });
@@ -340,11 +340,11 @@ router.get('/season/:seasonId', async (req, res) => {
       ORDER BY ps.created_at DESC
     `, [seasonId]);
     
-    res.json(result.rows);
+    return res.json(result.rows);
     
   } catch (error) {
     console.error('Error fetching season penalty shootouts:', error);
-    res.status(500).json({ error: 'Failed to fetch penalty shootouts' });
+    return res.status(500).json({ error: 'Failed to fetch penalty shootouts' });
   }
 });
 

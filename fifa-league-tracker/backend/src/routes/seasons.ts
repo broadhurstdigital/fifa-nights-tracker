@@ -16,10 +16,10 @@ router.get('/', async (req, res) => {
       GROUP BY s.id
       ORDER BY s.created_at DESC
     `);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching seasons:', error);
-    res.status(500).json({ error: 'Failed to fetch seasons' });
+    return res.status(500).json({ error: 'Failed to fetch seasons' });
   }
 });
 
@@ -54,10 +54,10 @@ router.get('/:id', async (req, res) => {
       players: playersResult.rows
     };
     
-    res.json(season);
+    return res.json(season);
   } catch (error) {
     console.error('Error fetching season:', error);
-    res.status(500).json({ error: 'Failed to fetch season' });
+    return res.status(500).json({ error: 'Failed to fetch season' });
   }
 });
 
@@ -79,10 +79,10 @@ router.post('/', async (req, res) => {
       [name.trim(), league_name.trim(), year]
     );
     
-    res.status(201).json(result.rows[0]);
+    return res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error creating season:', error);
-    res.status(500).json({ error: 'Failed to create season' });
+    return res.status(500).json({ error: 'Failed to create season' });
   }
 });
 
@@ -105,10 +105,10 @@ router.patch('/:id/status', async (req, res) => {
       return res.status(404).json({ error: 'Season not found' });
     }
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error updating season status:', error);
-    res.status(500).json({ error: 'Failed to update season status' });
+    return res.status(500).json({ error: 'Failed to update season status' });
   }
 });
 
@@ -181,10 +181,10 @@ router.post('/:id/players', async (req, res) => {
       WHERE sp.id = $1
     `, [result.rows[0].id]);
     
-    res.status(201).json(joinedResult.rows[0]);
+    return res.status(201).json(joinedResult.rows[0]);
   } catch (error) {
     console.error('Error adding player to season:', error);
-    res.status(500).json({ error: 'Failed to add player to season' });
+    return res.status(500).json({ error: 'Failed to add player to season' });
   }
 });
 
@@ -212,10 +212,10 @@ router.delete('/:id/players/:playerId', async (req, res) => {
       return res.status(404).json({ error: 'Player not found in this season' });
     }
     
-    res.json({ message: 'Player removed from season successfully' });
+    return res.json({ message: 'Player removed from season successfully' });
   } catch (error) {
     console.error('Error removing player from season:', error);
-    res.status(500).json({ error: 'Failed to remove player from season' });
+    return res.status(500).json({ error: 'Failed to remove player from season' });
   }
 });
 
@@ -241,10 +241,10 @@ router.get('/:id/available-teams', async (req, res) => {
     query += ' ORDER BY t.name';
     
     const result = await db.query(query, params);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching available teams:', error);
-    res.status(500).json({ error: 'Failed to fetch available teams' });
+    return res.status(500).json({ error: 'Failed to fetch available teams' });
   }
 });
 
@@ -306,10 +306,10 @@ router.get('/:id/leaderboard', async (req, res) => {
       chosen_team_losses: parseInt(row.chosen_team_losses) || 0,
     }));
     
-    res.json(leaderboard);
+    return res.json(leaderboard);
   } catch (error) {
     console.error('Error fetching season leaderboard:', error);
-    res.status(500).json({ error: 'Failed to fetch season leaderboard' });
+    return res.status(500).json({ error: 'Failed to fetch season leaderboard' });
   }
 });
 

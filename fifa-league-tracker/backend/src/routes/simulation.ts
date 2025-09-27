@@ -34,7 +34,7 @@ router.post('/match', async (req, res) => {
     
     const teams = new Map(teamsResult.rows.map(t => [t.id, t.name]));
     
-    res.json({
+    return res.json({
       home_team: {
         id: home_team_id,
         name: teams.get(home_team_id),
@@ -58,7 +58,7 @@ router.post('/match', async (req, res) => {
     
   } catch (error) {
     console.error('Error simulating match:', error);
-    res.status(500).json({ error: 'Failed to simulate match' });
+    return res.status(500).json({ error: 'Failed to simulate match' });
   }
 });
 
@@ -150,7 +150,7 @@ router.post('/round/:seasonId/:roundNumber', async (req, res) => {
       };
     });
     
-    res.json({
+    return res.json({
       message: auto_apply 
         ? `Simulated and applied results for ${results.length} fixtures in round ${roundNumber}`
         : `Simulated ${results.length} fixtures in round ${roundNumber}`,
@@ -162,7 +162,7 @@ router.post('/round/:seasonId/:roundNumber', async (req, res) => {
     
   } catch (error) {
     console.error('Error simulating round:', error);
-    res.status(500).json({ error: 'Failed to simulate round' });
+    return res.status(500).json({ error: 'Failed to simulate round' });
   }
 });
 
@@ -185,14 +185,14 @@ router.patch('/teams/:teamId/strength', async (req, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
     
-    res.json({
+    return res.json({
       message: 'Team strength updated successfully',
       team: teamResult.rows[0]
     });
     
   } catch (error) {
     console.error('Error updating team strength:', error);
-    res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to update team strength',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -229,14 +229,14 @@ router.patch('/teams/bulk-strength', async (req, res) => {
     
     await bulkUpdateTeamStrengths(updates);
     
-    res.json({
+    return res.json({
       message: `Successfully updated strength ratings for ${updates.length} teams`,
       updated_teams: updates.length
     });
     
   } catch (error) {
     console.error('Error bulk updating team strengths:', error);
-    res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to bulk update team strengths',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -254,11 +254,11 @@ router.get('/leagues/:league/analysis', async (req, res) => {
       return res.status(404).json({ error: 'League not found or has no teams' });
     }
     
-    res.json(analysis);
+    return res.json(analysis);
     
   } catch (error) {
     console.error('Error getting league analysis:', error);
-    res.status(500).json({ error: 'Failed to get league strength analysis' });
+    return res.status(500).json({ error: 'Failed to get league strength analysis' });
   }
 });
 
@@ -288,11 +288,11 @@ router.get('/leagues/:league/suggestions', async (req, res) => {
       team_id: team.id,
       team_name: team.name,
       current_strength: team.strength_rating,
-      suggested_strength: suggestions[team.name],
-      difference: suggestions[team.name] - team.strength_rating
+      suggested_strength: suggestions[team.name] || 50,
+      difference: (suggestions[team.name] || 50) - team.strength_rating
     }));
     
-    res.json({
+    return res.json({
       league,
       total_suggestions: Object.keys(suggestions).length,
       applicable_suggestions: applicableSuggestions.length,
@@ -305,7 +305,7 @@ router.get('/leagues/:league/suggestions', async (req, res) => {
     
   } catch (error) {
     console.error('Error getting league suggestions:', error);
-    res.status(500).json({ error: 'Failed to get league suggestions' });
+    return res.status(500).json({ error: 'Failed to get league suggestions' });
   }
 });
 
@@ -334,12 +334,12 @@ router.post('/leagues/:league/apply-suggestions', async (req, res) => {
     // Create bulk update payload
     const updates = existingTeams.rows.map(team => ({
       team_id: team.id,
-      strength_rating: suggestions[team.name]
+      strength_rating: suggestions[team.name] || 50
     }));
     
     await bulkUpdateTeamStrengths(updates);
     
-    res.json({
+    return res.json({
       message: `Applied suggested strength ratings for ${updates.length} teams in ${league}`,
       league,
       updated_teams: updates.length,
@@ -348,7 +348,7 @@ router.post('/leagues/:league/apply-suggestions', async (req, res) => {
     
   } catch (error) {
     console.error('Error applying league suggestions:', error);
-    res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to apply league suggestions',
       details: error instanceof Error ? error.message : 'Unknown error'
     });

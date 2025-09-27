@@ -53,10 +53,10 @@ router.get('/season/:seasonId', async (req, res) => {
     query += ' ORDER BY f.round_number, f.match_number';
     
     const result = await db.query(query, params);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching matches:', error);
-    res.status(500).json({ error: 'Failed to fetch matches' });
+    return res.status(500).json({ error: 'Failed to fetch matches' });
   }
 });
 
@@ -91,10 +91,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Match not found' });
     }
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching match:', error);
-    res.status(500).json({ error: 'Failed to fetch match' });
+    return res.status(500).json({ error: 'Failed to fetch match' });
   }
 });
 
@@ -177,10 +177,10 @@ router.post('/', async (req, res) => {
       WHERE m.id = $1
     `, [result.rows[0].id]);
     
-    res.status(201).json(joinedResult.rows[0]);
+    return res.status(201).json(joinedResult.rows[0]);
   } catch (error) {
     console.error('Error creating match:', error);
-    res.status(500).json({ error: 'Failed to create match' });
+    return res.status(500).json({ error: 'Failed to create match' });
   }
 });
 
@@ -301,10 +301,10 @@ router.patch('/:id/score', async (req, res) => {
       WHERE m.id = $1
     `, [id]);
     
-    res.json(updatedResult.rows[0]);
+    return res.json(updatedResult.rows[0]);
   } catch (error) {
     console.error('Error updating match score:', error);
-    res.status(500).json({ error: 'Failed to update match score' });
+    return res.status(500).json({ error: 'Failed to update match score' });
   }
 });
 
@@ -321,7 +321,7 @@ router.post('/season/:seasonId/assign-round/:roundNumber', async (req, res) => {
     
     const assignments = await assignPlayersToRound(parseInt(seasonId), parseInt(roundNumber));
     
-    res.json({
+    return res.json({
       message: `Successfully assigned players to round ${roundNumber}`,
       round_number: parseInt(roundNumber),
       assignments_made: assignments.length,
@@ -330,7 +330,7 @@ router.post('/season/:seasonId/assign-round/:roundNumber', async (req, res) => {
     
   } catch (error) {
     console.error('Error assigning players to round:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: 'Failed to assign players to round',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -350,14 +350,14 @@ router.post('/season/:seasonId/assign-all', async (req, res) => {
     
     const stats = await assignPlayersToSeason(parseInt(seasonId));
     
-    res.json({
+    return res.json({
       message: 'Successfully assigned players to all fixtures',
       ...stats
     });
     
   } catch (error) {
     console.error('Error assigning players to season:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: 'Failed to assign players to season',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -370,11 +370,11 @@ router.get('/season/:seasonId/assignment-stats', async (req, res) => {
     const { seasonId } = req.params;
     
     const stats = await getAssignmentStats(parseInt(seasonId));
-    res.json(stats);
+    return res.json(stats);
     
   } catch (error) {
     console.error('Error fetching assignment stats:', error);
-    res.status(500).json({ error: 'Failed to fetch assignment statistics' });
+    return res.status(500).json({ error: 'Failed to fetch assignment statistics' });
   }
 });
 
@@ -389,10 +389,10 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Match not found' });
     }
     
-    res.json({ message: 'Match deleted successfully' });
+    return res.json({ message: 'Match deleted successfully' });
   } catch (error) {
     console.error('Error deleting match:', error);
-    res.status(500).json({ error: 'Failed to delete match' });
+    return res.status(500).json({ error: 'Failed to delete match' });
   }
 });
 

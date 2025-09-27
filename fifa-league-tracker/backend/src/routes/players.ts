@@ -8,10 +8,10 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const result = await db.query('SELECT * FROM players ORDER BY name');
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching players:', error);
-    res.status(500).json({ error: 'Failed to fetch players' });
+    return res.status(500).json({ error: 'Failed to fetch players' });
   }
 });
 
@@ -25,10 +25,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Player not found' });
     }
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching player:', error);
-    res.status(500).json({ error: 'Failed to fetch player' });
+    return res.status(500).json({ error: 'Failed to fetch player' });
   }
 });
 
@@ -54,10 +54,10 @@ router.post('/', async (req, res) => {
       [name.trim(), email || null]
     );
     
-    res.status(201).json(result.rows[0]);
+    return res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error creating player:', error);
-    res.status(500).json({ error: 'Failed to create player' });
+    return res.status(500).json({ error: 'Failed to create player' });
   }
 });
 
@@ -108,10 +108,10 @@ router.put('/:id', async (req, res) => {
       values
     );
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error updating player:', error);
-    res.status(500).json({ error: 'Failed to update player' });
+    return res.status(500).json({ error: 'Failed to update player' });
   }
 });
 
@@ -136,10 +136,10 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Player not found' });
     }
     
-    res.json({ message: 'Player deleted successfully', player: result.rows[0] });
+    return res.json({ message: 'Player deleted successfully', player: result.rows[0] });
   } catch (error) {
     console.error('Error deleting player:', error);
-    res.status(500).json({ error: 'Failed to delete player' });
+    return res.status(500).json({ error: 'Failed to delete player' });
   }
 });
 
@@ -262,10 +262,10 @@ router.get('/:id/stats', async (req, res) => {
     
     stats.goal_difference = stats.goals_scored - stats.goals_conceded;
     
-    res.json(stats);
+    return res.json(stats);
   } catch (error) {
     console.error('Error fetching player stats:', error);
-    res.status(500).json({ error: 'Failed to fetch player statistics' });
+    return res.status(500).json({ error: 'Failed to fetch player statistics' });
   }
 });
 

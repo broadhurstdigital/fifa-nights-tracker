@@ -25,10 +25,10 @@ router.get('/', async (req, res) => {
     query += ' ORDER BY league, name';
     
     const result = await db.query(query, params);
-    res.json(result.rows);
+    return res.json(result.rows);
   } catch (error) {
     console.error('Error fetching teams:', error);
-    res.status(500).json({ error: 'Failed to fetch teams' });
+    return res.status(500).json({ error: 'Failed to fetch teams' });
   }
 });
 
@@ -36,10 +36,10 @@ router.get('/', async (req, res) => {
 router.get('/leagues', async (req, res) => {
   try {
     const result = await db.query('SELECT DISTINCT league FROM teams ORDER BY league');
-    res.json(result.rows.map(row => row.league));
+    return res.json(result.rows.map(row => row.league));
   } catch (error) {
     console.error('Error fetching leagues:', error);
-    res.status(500).json({ error: 'Failed to fetch leagues' });
+    return res.status(500).json({ error: 'Failed to fetch leagues' });
   }
 });
 
@@ -47,10 +47,10 @@ router.get('/leagues', async (req, res) => {
 router.get('/countries', async (req, res) => {
   try {
     const result = await db.query('SELECT DISTINCT country FROM teams ORDER BY country');
-    res.json(result.rows.map(row => row.country));
+    return res.json(result.rows.map(row => row.country));
   } catch (error) {
     console.error('Error fetching countries:', error);
-    res.status(500).json({ error: 'Failed to fetch countries' });
+    return res.status(500).json({ error: 'Failed to fetch countries' });
   }
 });
 
@@ -64,10 +64,10 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching team:', error);
-    res.status(500).json({ error: 'Failed to fetch team' });
+    return res.status(500).json({ error: 'Failed to fetch team' });
   }
 });
 
@@ -99,10 +99,10 @@ router.post('/', async (req, res) => {
       [name.trim(), league.trim(), country.trim(), strength_rating || 50]
     );
     
-    res.status(201).json(result.rows[0]);
+    return res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error creating team:', error);
-    res.status(500).json({ error: 'Failed to create team' });
+    return res.status(500).json({ error: 'Failed to create team' });
   }
 });
 
@@ -183,10 +183,10 @@ router.put('/:id', async (req, res) => {
       values
     );
     
-    res.json(result.rows[0]);
+    return res.json(result.rows[0]);
   } catch (error) {
     console.error('Error updating team:', error);
-    res.status(500).json({ error: 'Failed to update team' });
+    return res.status(500).json({ error: 'Failed to update team' });
   }
 });
 
@@ -222,10 +222,10 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Team not found' });
     }
     
-    res.json({ message: 'Team deleted successfully', team: result.rows[0] });
+    return res.json({ message: 'Team deleted successfully', team: result.rows[0] });
   } catch (error) {
     console.error('Error deleting team:', error);
-    res.status(500).json({ error: 'Failed to delete team' });
+    return res.status(500).json({ error: 'Failed to delete team' });
   }
 });
 
