@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: fifa_postgres
+    environment:
+      POSTGRES_DB: fifa_league
+      POSTGRES_USER: fifa_user
+      POSTGRES_PASSWORD: fifa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - fifa_network
+
+  backend:
+    build: ./backend
+    container_name: fifa_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://fifa_user:fifa_password@postgres:5432/fifa_league
+      - JWT_SECRET=your_jwt_secret_here
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - fifa_network
+
+  frontend:
+    build: ./frontend
+    container_name: fifa_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - fifa_network
+
+volumes:
+  postgres_data:
+
+networks:
+  fifa_network:
+    driver: bridge

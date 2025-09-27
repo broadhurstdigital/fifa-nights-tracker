@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: fifa_nights
+      POSTGRES_USER: fifa_user
+      POSTGRES_PASSWORD: fifa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fifa_user -d fifa_nights"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./fifa-league-tracker
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://fifa_user:fifa_password@postgres:5432/fifa_nights
+      NODE_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./fifa-league-tracker:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
