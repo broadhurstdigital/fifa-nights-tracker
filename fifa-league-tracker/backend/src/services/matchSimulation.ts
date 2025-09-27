@@ -268,7 +268,7 @@ export async function getLeagueStrengthAnalysis(league: string): Promise<{
   return {
     league,
     team_count: parseInt(stats.team_count),
-    average_strength: parseFloat(stats.average_strength).toFixed(1),
+    average_strength: parseFloat(parseFloat(stats.average_strength).toFixed(1)),
     min_strength: parseInt(stats.min_strength),
     max_strength: parseInt(stats.max_strength),
     strength_range: parseInt(stats.strength_range),
