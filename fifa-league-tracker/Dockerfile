@@ -2,12 +2,12 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
+# Install dependencies from backend directory
+COPY backend/package*.json ./
 RUN npm install
 
-# Copy source code
-COPY . .
+# Copy backend source code
+COPY backend/ .
 
 # Build TypeScript
 RUN npm run build
