@@ -15,11 +15,23 @@ import matchRoutes from './routes/matches';
 import cupRoutes from './routes/cups';
 import penaltyRoutes from './routes/penalties';
 
-// Load environment variables
+// Load environment variables (for local development)
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Log environment info for debugging
+console.log('Starting FIFA League Tracker Backend...');
+console.log('Environment:', process.env.NODE_ENV || 'development');
+console.log('Port:', PORT);
+console.log('Database URL available:', !!process.env.DATABASE_URL);
+
+// Validate DATABASE_URL
+if (!process.env.DATABASE_URL) {
+  console.error('FATAL: DATABASE_URL environment variable is not set!');
+  process.exit(1);
+}
 
 // Database connection
 export const db = new Pool({
@@ -30,14 +42,17 @@ export const db = new Pool({
 // Initialize database and start server
 async function startServer() {
   try {
+    console.log('Attempting to connect to database...');
+    
     // Test database connection
     const client = await db.connect();
-    console.log('Connected to PostgreSQL database');
+    console.log('✓ Connected to PostgreSQL database');
     client.release();
 
     // Initialize database schema
+    console.log('Initializing database schema...');
     await initializeDatabase(db);
-    console.log('Database initialization complete');
+    console.log('✓ Database initialization complete');
 
     // Middleware
     app.use(helmet());
@@ -81,8 +96,8 @@ async function startServer() {
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log('✓ Server is running on port', PORT);
+      console.log('✓ FIFA League Tracker Backend is ready!');
     });
   } catch (error) {
     console.error('Failed to start server:', error);
