@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
+import { initializeDatabase } from './services/database';
 
 // Import routes
 import playerRoutes from './routes/players';
@@ -26,55 +27,68 @@ export const db = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
-// Test database connection
-db.connect()
-  .then(() => console.log('Connected to PostgreSQL database'))
-  .catch((err) => console.error('Database connection error:', err));
+// Initialize database and start server
+async function startServer() {
+  try {
+    // Test database connection
+    await db.connect();
+    console.log('Connected to PostgreSQL database');
 
-// Middleware
-app.use(helmet());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : 'http://localhost:3000',
-  credentials: true,
-}));
-app.use(morgan('combined'));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    // Initialize database schema
+    await initializeDatabase(db);
+    console.log('Database initialization complete');
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
-});
+    // Middleware
+    app.use(helmet());
+    app.use(cors({
+      origin: process.env.NODE_ENV === 'production' 
+        ? process.env.FRONTEND_URL 
+        : 'http://localhost:3000',
+      credentials: true,
+    }));
+    app.use(morgan('combined'));
+    app.use(express.json({ limit: '10mb' }));
+    app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// API routes
-app.use('/api/players', playerRoutes);
-app.use('/api/seasons', seasonRoutes);
-app.use('/api/teams', teamRoutes);
-app.use('/api/fixtures', fixtureRoutes);
-app.use('/api/matches', matchRoutes);
-app.use('/api/cups', cupRoutes);
-app.use('/api/penalties', penaltyRoutes);
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+      res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+    });
 
-// Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-  });
-});
+    // API routes
+    app.use('/api/players', playerRoutes);
+    app.use('/api/seasons', seasonRoutes);
+    app.use('/api/teams', teamRoutes);
+    app.use('/api/fixtures', fixtureRoutes);
+    app.use('/api/matches', matchRoutes);
+    app.use('/api/cups', cupRoutes);
+    app.use('/api/penalties', penaltyRoutes);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
+    // Error handling middleware
+    app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+      console.error('Error:', err);
+      res.status(500).json({ 
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+      });
+    });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+    // 404 handler
+    app.use('*', (req, res) => {
+      res.status(404).json({ error: 'Route not found' });
+    });
+
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;
