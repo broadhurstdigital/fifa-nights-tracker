@@ -57,8 +57,8 @@ async function startServer() {
     // Middleware
     app.use(helmet());
     app.use(cors({
-      origin: process.env.NODE_ENV === 'production' 
-        ? process.env.FRONTEND_URL 
+      origin: process.env.NODE_ENV === 'production'
+        ? [process.env.FRONTEND_URL || '', 'https://fifa-nights-tracker-production.up.railway.app'].filter(url => url !== '')
         : 'http://localhost:3000',
       credentials: true,
     }));

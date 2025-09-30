@@ -1,22 +1,24 @@
 import axios from 'axios';
-import type { 
-  Player, 
-  Team, 
-  Season, 
+import type {
+  Player,
+  Team,
+  Season,
   SeasonWithStats,
   PlayerTeamAssignment,
   Fixture,
   Match,
   PlayerStats,
   ApiResponse,
-  PaginatedResponse 
+  PaginatedResponse
 } from '@/types';
+import { API_CONFIG } from '@/config/api';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: `${API_CONFIG.baseURL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: API_CONFIG.timeout,
 });
 
 // Players API
