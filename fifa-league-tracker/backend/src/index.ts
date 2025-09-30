@@ -31,8 +31,9 @@ export const db = new Pool({
 async function startServer() {
   try {
     // Test database connection
-    await db.connect();
+    const client = await db.connect();
     console.log('Connected to PostgreSQL database');
+    client.release();
 
     // Initialize database schema
     await initializeDatabase(db);
