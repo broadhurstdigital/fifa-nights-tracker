@@ -10,7 +10,8 @@
       "WebFetch(domain:fifa-nights-tracker-production.up.railway.app)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
