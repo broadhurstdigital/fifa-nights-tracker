@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA Nights Championship League Draw</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            background: #0a0e27;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.8s ease;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00ff87 0%, #60efff 100%);
+            z-index: 1000;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            animation: titleGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #00ff87, #60efff, transparent);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 50px;
+            opacity: 0.85;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: subtitlePulse 3s ease-in-out infinite;
+        }
+
+        .opening-stage {
+            position: relative;
+        }
+
+        .spotlight {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            pointer-events: none;
+            animation: spotlightSweep 8s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        .spotlight:nth-child(2) {
+            animation-delay: 2s;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            animation: particleFloat 6s ease-in-out infinite;
+        }
+
+        .player-info {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 20px 0;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, rgba(0, 255, 135, 0.1) 0%, rgba(96, 239, 255, 0.1) 100%);
+            border-radius: 15px;
+            border: 2px solid rgba(0, 255, 135, 0.3);
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 20px rgba(0, 255, 135, 0.2);
+        }
+
+        .player-info.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 40px auto;
+            display: none;
+        }
+
+        .wheel-container.active {
+            display: block;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            transition: transform 8s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            box-shadow:
+                0 0 60px rgba(0, 255, 135, 0.3),
+                0 0 100px rgba(96, 239, 255, 0.2),
+                inset 0 0 80px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            background: #1a1f3a;
+        }
+
+        .wheel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 8px solid transparent;
+            background: linear-gradient(135deg, #00ff87, #60efff) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(50% 50%, 50% 0%, 100% 0%);
+            transform-origin: center;
+            border-radius: 50%;
+        }
+
+        .wheel-text {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+            letter-spacing: 0.5px;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            border-radius: 50%;
+            border: 4px solid #0a0e27;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(0, 255, 135, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #0a0e27;
+            font-size: 12px;
+        }
+
+        .wheel-center::after {
+            content: 'FIFA';
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #00ff87;
+            z-index: 11;
+            filter: drop-shadow(0 4px 8px rgba(0, 255, 135, 0.6));
+        }
+
+        .wheel-pointer::after {
+            content: '';
+            position: absolute;
+            top: -48px;
+            left: -20px;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #60efff;
+        }
+
+        .team-result {
+            font-size: 4em;
+            font-weight: 900;
+            margin: 40px 0;
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            border: 3px solid rgba(0, 255, 135, 0.5);
+            display: none;
+            animation: zoomIn 0.8s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow:
+                0 0 40px rgba(0, 255, 135, 0.3),
+                inset 0 0 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .team-result.show {
+            display: block;
+        }
+
+        .draws-summary {
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(0, 255, 135, 0.05) 0%, rgba(96, 239, 255, 0.05) 100%);
+            border-radius: 20px;
+            border: 2px solid rgba(0, 255, 135, 0.2);
+            font-size: 1.2em;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .draws-summary h2 {
+            font-size: 1.8em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .draw-item {
+            margin: 15px 0;
+            padding: 15px 20px;
+            background: rgba(0, 255, 135, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #00ff87;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        button {
+            font-size: 1.3em;
+            font-weight: 700;
+            padding: 18px 60px;
+            margin: 20px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            color: #0a0e27;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow:
+                0 4px 20px rgba(0, 255, 135, 0.4),
+                0 0 40px rgba(96, 239, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow:
+                0 6px 30px rgba(0, 255, 135, 0.6),
+                0 0 60px rgba(96, 239, 255, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 10px rgba(0, 255, 135, 0.2);
+        }
+
+        .status {
+            margin: 20px 0;
+            font-size: 1.2em;
+            min-height: 30px;
+            opacity: 0.85;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(1800deg); }
+        }
+
+        .audio-indicator {
+            display: none;
+            margin: 20px 0;
+            font-size: 1.1em;
+            padding: 10px 25px;
+            background: rgba(0, 255, 135, 0.1);
+            border-radius: 25px;
+            border: 1px solid rgba(0, 255, 135, 0.3);
+            display: inline-block;
+            opacity: 0;
+        }
+
+        .audio-indicator.playing {
+            opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes titleGlow {
+            0%, 100% {
+                filter: drop-shadow(0 0 20px rgba(0, 255, 135, 0.4));
+                transform: scale(1);
+            }
+            50% {
+                filter: drop-shadow(0 0 40px rgba(96, 239, 255, 0.6));
+                transform: scale(1.01);
+            }
+        }
+
+        @keyframes subtitlePulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes spotlightSweep {
+            0%, 100% {
+                left: 0%;
+                top: 20%;
+            }
+            25% {
+                left: 70%;
+                top: 10%;
+            }
+            50% {
+                left: 80%;
+                top: 60%;
+            }
+            75% {
+                left: 20%;
+                top: 70%;
+            }
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) translateX(100px) scale(1);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="spotlight"></div>
+    <div class="spotlight"></div>
+
+    <div class="container">
+        <div class="opening-stage" id="openingStage">
+            <h1>FIFA NIGHTS TV</h1>
+            <div class="subtitle">Championship League Draw Live</div>
+        </div>
+
+        <div class="status" id="status"></div>
+        <div class="audio-indicator" id="audioIndicator">🔊 Commentary playing...</div>
+
+        <button id="startBtn" onclick="startDraw()">Start Draw</button>
+        <button id="drawBtn" onclick="performDraw()" style="display:none;" disabled>Draw Team</button>
+
+        <div class="player-info" id="playerInfo"></div>
+
+        <div class="wheel-container" id="wheelContainer">
+            <div class="wheel-pointer"></div>
+            <div class="wheel" id="wheel"></div>
+            <div class="wheel-center"></div>
+        </div>
+
+        <div class="team-result" id="teamResult"></div>
+
+        <div class="draws-summary" id="drawsSummary" style="display:none;">
+            <h2>Draw Results</h2>
+            <div id="drawsList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Team data with authentic club colors
+        const TEAMS_DATA = {
+            'Stoke City': { primary: '#E03A3E', secondary: '#FFFFFF' },
+            'West Bromwich Albion': { primary: '#122F67', secondary: '#FFFFFF' },
+            'Bristol City': { primary: '#E4002B', secondary: '#FFFFFF' },
+            'Leicester City': { primary: '#003090', secondary: '#FDBE11' },
+            'Preston North End': { primary: '#FFFFFF', secondary: '#001489' },
+            'Swansea City': { primary: '#000000', secondary: '#FFFFFF' },
+            'Charlton Athletic': { primary: '#D4021D', secondary: '#FFFFFF' },
+            'Queens Park Rangers': { primary: '#1D5BA4', secondary: '#FFFFFF' },
+            'Birmingham City': { primary: '#0033A0', secondary: '#FFFFFF' },
+            'Millwall': { primary: '#002D62', secondary: '#FFFFFF' },
+            'Ipswich Town': { primary: '#0033A0', secondary: '#FFFFFF' },
+            'Southampton': { primary: '#D71920', secondary: '#130C0E' },
+            'Wrexham': { primary: '#EE2737', secondary: '#FFFFFF' },
+            'Watford': { primary: '#FBEE23', secondary: '#ED2127' },
+            'Portsmouth': { primary: '#001489', secondary: '#FFFFFF' },
+            'Hull City': { primary: '#F5A12D', secondary: '#000000' },
+            'Norwich City': { primary: '#00A650', secondary: '#FFF200' },
+            'Derby County': { primary: '#FFFFFF', secondary: '#000000' }
+        };
+
+        // API Configuration
+        const GROQ_API_KEY = 'YOUR_GROQ_API_KEY_HERE';
+        const ELEVENLABS_API_KEY = 'YOUR_ELEVENLABS_API_KEY_HERE';
+        const ELEVENLABS_VOICE_ID = 'wV4HYsYQoBFN089GpaS9';
+
+        // Draw state
+        let availableTeams = Object.keys(TEAMS_DATA);
+        let currentPlayerIndex = 0;
+        const players = ['Josh', 'Martin', 'Paul'];
+        let drawResults = [];
+        let isDrawing = false;
+        let conversationHistory = [
+            {
+                role: "system",
+                content: "You are a TV broadcast commentator for FIFA Nights TV"
+            }
+        ];
+
+        // Initialize wheel
+        function initWheel() {
+            const wheel = document.getElementById('wheel');
+            wheel.innerHTML = '';
+
+            const segmentAngle = 360 / availableTeams.length;
+
+            availableTeams.forEach((team, index) => {
+                const segment = document.createElement('div');
+                segment.className = 'wheel-segment';
+                segment.style.transform = `rotate(${index * segmentAngle}deg)`;
+
+                const colors = TEAMS_DATA[team];
+                segment.style.background = `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`;
+
+                const text = document.createElement('div');
+                text.className = 'wheel-text';
+                text.textContent = team;
+                text.style.transform = `rotate(${segmentAngle / 2}deg)`;
+
+                segment.appendChild(text);
+                wheel.appendChild(segment);
+            });
+        }
+
+        // Generate commentary using Groq with strict length control
+        async function generateCommentary(prompt, maxTokens = 80) {
+            conversationHistory.push({
+                role: "user",
+                content: prompt
+            });
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: conversationHistory,
+                        temperature: 0.8,
+                        max_tokens: maxTokens,
+                        top_p: 0.9
+                    })
+                });
+
+                const data = await response.json();
+                const commentary = data.choices[0].message.content;
+
+                conversationHistory.push({
+                    role: "assistant",
+                    content: commentary
+                });
+
+                return commentary;
+            } catch (error) {
+                console.error('Groq API error:', error);
+                return "Welcome to the FIFA Nights Championship League Draw!";
+            }
+        }
+
+        // Track current audio to prevent overlap
+        let currentAudio = null;
+
+        // Play commentary using ElevenLabs streaming
+        async function playCommentary(text) {
+            // Stop any currently playing audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            const audioIndicator = document.getElementById('audioIndicator');
+            audioIndicator.classList.add('playing');
+
+            try {
+                const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}/stream`, {
+                    method: 'POST',
+                    headers: {
+                        'xi-api-key': ELEVENLABS_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: 'eleven_multilingual_v2',
+                        voice_settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.75,
+                            speed: 1.1
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('ElevenLabs API error');
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                currentAudio = audio;
+
+                return new Promise((resolve) => {
+                    audio.onended = () => {
+                        audioIndicator.classList.remove('playing');
+                        URL.revokeObjectURL(audioUrl);
+                        currentAudio = null;
+                        resolve();
+                    };
+                    audio.onerror = () => {
+                        audioIndicator.classList.remove('playing');
+                        currentAudio = null;
+                        resolve();
+                    };
+                    audio.play().catch(() => {
+                        audioIndicator.classList.remove('playing');
+                        currentAudio = null;
+                        resolve();
+                    });
+                });
+            } catch (error) {
+                console.error('Audio playback error:', error);
+                audioIndicator.classList.remove('playing');
+                currentAudio = null;
+                // Fallback: just wait a bit
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
+
+        // Start the draw
+        async function startDraw() {
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('status').textContent = 'Initializing draw...';
+
+            // Generate and play opening commentary (LONGER for hype)
+            const openingPrompt = "You are presenting the opening of the FIFA Nights Championship League Draw Live! Josh, Martin, and Paul will each draw a team to play as in the upcoming FIFA tournament. Build REAL excitement and drama with enthusiasm! You have 3-4 sentences to hype this up (around 50 words). ONLY REPLY WITH THE WORDS SPOKEN BY YOU. NO NOTATION! NO DIRECTION. JUST THE WORDS YOU SAY ALOUD.";
+            const opening = await generateCommentary(openingPrompt, 200);
+
+            await playCommentary(opening);
+
+            // Show draw button and wheel
+            document.getElementById('drawBtn').style.display = 'inline-block';
+            document.getElementById('drawBtn').disabled = false;
+            document.getElementById('wheelContainer').classList.add('active');
+            document.getElementById('drawsSummary').style.display = 'block';
+
+            initWheel();
+            showCurrentPlayer();
+        }
+
+        // Show current player
+        function showCurrentPlayer() {
+            const playerInfo = document.getElementById('playerInfo');
+            const currentPlayer = players[currentPlayerIndex];
+            playerInfo.textContent = `${currentPlayer}'s Turn`;
+            playerInfo.classList.add('active');
+            document.getElementById('status').textContent = `${currentPlayer} is up next!`;
+        }
+
+        // Perform draw
+        async function performDraw() {
+            if (isDrawing || availableTeams.length === 0) return;
+
+            isDrawing = true;
+            document.getElementById('drawBtn').disabled = true;
+            document.getElementById('teamResult').classList.remove('show');
+
+            const currentPlayer = players[currentPlayerIndex];
+
+            // Generate spinning commentary (SHORT - max 50 words)
+            const spinPrompt = `${currentPlayer} is about to draw! The wheel is spinning! Build quick tension and anticipation. Keep it brief - maximum 50 words total, 2-3 sentences. ONLY REPLY WITH THE WORDS SPOKEN BY YOU. NO NOTATION!`;
+            const spinCommentary = await generateCommentary(spinPrompt, 80);
+
+            // Play commentary and start spinning simultaneously
+            const commentaryPromise = playCommentary(spinCommentary);
+
+            // Start spinning
+            const wheel = document.getElementById('wheel');
+            const randomSpins = 5 + Math.random() * 3;
+            const randomAngle = Math.random() * 360;
+            const totalRotation = (randomSpins * 360) + randomAngle;
+
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+
+            // Wait for BOTH commentary to finish AND minimum spin time
+            const spinTime = 8000; // Reduced to 8 seconds
+            await Promise.all([
+                commentaryPromise,
+                new Promise(resolve => setTimeout(resolve, spinTime))
+            ]);
+
+            // Determine winning team
+            const segmentAngle = 360 / availableTeams.length;
+            const normalizedAngle = (totalRotation % 360);
+            const winningIndex = Math.floor(normalizedAngle / segmentAngle);
+            const drawnTeam = availableTeams[winningIndex];
+
+            // Show result
+            showTeamResult(drawnTeam, currentPlayer);
+
+            // Generate landing commentary (moderate length)
+            const landingPrompt = `${currentPlayer} has drawn ${drawnTeam}! React with enthusiasm and make a fun comment about the team and how it suits ${currentPlayer}. Keep it to 2-3 sentences (around 40 words max). ONLY REPLY WITH THE WORDS SPOKEN BY YOU. NO NOTATION!`;
+            const landingCommentary = await generateCommentary(landingPrompt, 100);
+
+            await playCommentary(landingCommentary);
+
+            // Update state
+            drawResults.push({ player: currentPlayer, team: drawnTeam });
+            availableTeams = availableTeams.filter(t => t !== drawnTeam);
+
+            // Update draws list
+            updateDrawsList();
+
+            // Move to next player or finish
+            currentPlayerIndex++;
+
+            if (currentPlayerIndex < players.length) {
+                initWheel();
+                showCurrentPlayer();
+                document.getElementById('drawBtn').disabled = false;
+                isDrawing = false;
+            } else {
+                await finishDraw();
+            }
+        }
+
+        // Show team result
+        function showTeamResult(team, player) {
+            const colors = TEAMS_DATA[team];
+            const resultDiv = document.getElementById('teamResult');
+
+            document.body.style.background = `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`;
+
+            resultDiv.textContent = team;
+            resultDiv.style.background = `linear-gradient(135deg, ${colors.primary} 20%, ${colors.secondary} 80%)`;
+            resultDiv.style.border = `5px solid ${colors.secondary}`;
+            resultDiv.classList.add('show');
+        }
+
+        // Update draws list
+        function updateDrawsList() {
+            const drawsList = document.getElementById('drawsList');
+            drawsList.innerHTML = drawResults.map(draw =>
+                `<div class="draw-item">${draw.player} → ${draw.team}</div>`
+            ).join('');
+        }
+
+        // Finish draw
+        async function finishDraw() {
+            document.getElementById('drawBtn').style.display = 'none';
+            document.getElementById('wheelContainer').classList.remove('active');
+            document.getElementById('playerInfo').classList.remove('active');
+
+            const summary = drawResults.map(d => `${d.player} got ${d.team}`).join(', ');
+            const closingPrompt = `The FIFA Nights Championship League Draw is complete! Here are the final results: ${summary}. Give an exciting wrap-up with 3-4 sentences (around 60 words) and sign off with "and now, back to the studio!" ONLY REPLY WITH THE WORDS SPOKEN BY YOU. NO NOTATION!`;
+
+            const closingCommentary = await generateCommentary(closingPrompt, 250);
+            await playCommentary(closingCommentary);
+
+            document.getElementById('status').textContent = 'Draw complete!';
+
+            // Reset background
+            setTimeout(() => {
+                document.body.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+            }, 3000);
+        }
+
+        // Create animated particles for opening scene
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 6}s`;
+                particle.style.animationDuration = `${4 + Math.random() * 4}s`;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize on load
+        window.onload = () => {
+            console.log('FIFA Nights Draw initialized');
+            console.log(`${availableTeams.length} teams loaded`);
+            createParticles();
+        };
+    </script>
+</body>
+</html>
